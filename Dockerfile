@@ -32,6 +32,12 @@ RUN set -ex \
        vim-enhanced \
        http-parser-devel \
        json-c-devel \
+       autoconf \
+       automake \
+       ncurses-devel \
+       bzip2-devel \
+       xz-devel \
+       curl-devel \
     && yum clean all \
     && rm -rf /var/cache/yum
 
@@ -95,5 +101,34 @@ RUN set -x \
 
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+
+RUN set -ex \
+    && git clone --single-branch --depth=1 https://github.com/lh3/bwa.git \
+    && pushd bwa \
+    && make \
+    && install -D -m755 ./bwa /usr/local/bin/bwa \
+    && popd \
+    && rm -rf bwa
+
+RUN set -ex \
+    && git clone --single-branch --depth=1 https://github.com/samtools/htslib.git \
+    && git clone --single-branch --depth=1 https://github.com/samtools/samtools.git \
+    && pushd htslib \
+    && git submodule update --init --recursive --depth 1 \
+    && popd \
+    && pushd samtools \
+    && autoreconf -i && ./configure && make install \
+    && popd \
+    && rm -rf htslib samtools
+
+# java is really huge, let use a separate slice for it
+RUN set -ex \
+    && yum makecache \
+    && yum -y update \
+    && yum -y install dnf-plugins-core \
+    && yum config-manager --set-enabled powertools \
+    && yum -y install java-17-openjdk \       
+    && yum clean all \
+    && rm -rf /var/cache/yum
 
 CMD ["slurmdbd"]

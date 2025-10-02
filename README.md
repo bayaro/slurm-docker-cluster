@@ -18,6 +18,7 @@ Clone the repository:
 ```bash
 git clone https://github.com/bayaro/slurm-docker-cluster.git
 cd slurm-docker-cluster
+git checkout test-task
 ```
 
 ## 📦 Containers and Volumes
@@ -33,14 +34,13 @@ This setup consists of the following containers:
 
 - `etc_munge`: Mounted to `/etc/munge`
 - `etc_slurm`: Mounted to `/etc/slurm`
-- `slurm_jobdir`: Mounted to `/data`
 - `var_lib_mysql`: Mounted to `/var/lib/mysql`
 - `var_log_slurm`: Mounted to `/var/log/slurm`
 
 ### Bind mount
 
 - `./data`: Mounted to `/data`
-- `.//nf-pipelines`: Mounted to `/pipelines`
+- `./nf-pipelines`: Mounted to `/pipelines`
 
 ## 🛠️  Building the Docker Image
 
@@ -56,12 +56,14 @@ docker compose build
 
 ## 🚀 Starting the Cluster
 
-Once the image is built, deploy the cluster with the default version of slurm
+Once the images are built, deploy the cluster with the default version of slurm
 using Docker Compose:
 
 ```bash
 docker compose up -d
 ```
+
+__NB__ Cluster runs __two__ compute nodes. Every is configured with __2__ CPUs and __3000__ memory.
 
 This will start up all containers in detached mode. You can monitor their status using:
 
@@ -83,14 +85,31 @@ To interact with the Slurm controller, open a shell inside the `slurmctld` conta
 docker exec -it slurmctld bash
 ```
 
-## Triggering a nextflow pipeline
+## 🏃 Triggering the nextflow test pipeline
 
-Copy the unarchived input folder with sample data to the data folder. Start the nextflow pipeline:
-```bash
-docker exec -it slurmctld /pipelines/do.nf
+Copy fasta/fastq data into `data/input` folder as
+```
+data
+  input
+    fasta
+      *.fa
+    fastq
+      *.fastq[.gz]
 ```
 
-### Deleting the Cluster:
+Start the nextflow pipeline:
+```bash
+docker exec -it slurmctld ./test.nf
+```
+
+### 👓 Generating report
+
+The report will be generated automatically at the end of pipeline. But ...
+```
+docker exec -it slurmctld bin/report.py -i /data/input -o /data/results -c /dev/stdout
+```
+
+### 🗑 Deleting the Cluster:
 
 To completely remove the containers and associated volumes:
 
@@ -98,5 +117,5 @@ To completely remove the containers and associated volumes:
 docker compose down -v
 ```
 
-### Original README.md
+### 🕮 Original README.md
 - [README.md](README.cluster.md)

@@ -1,0 +1,6 @@
+
+data/
+!data/.placehlder
+
+nf-pipelines/work
+nf-pipelines/.nextflow*

@@ -28,6 +28,7 @@ RUN set -ex \
        mariadb-server \
        mariadb-devel \
        psmisc \
+       procps \
        bash-completion \
        vim-enhanced \
        http-parser-devel \
@@ -120,15 +121,5 @@ RUN set -ex \
     && autoreconf -i && ./configure && make install \
     && popd \
     && rm -rf htslib samtools
-
-# java is really huge, let use a separate slice for it
-RUN set -ex \
-    && yum makecache \
-    && yum -y update \
-    && yum -y install dnf-plugins-core \
-    && yum config-manager --set-enabled powertools \
-    && yum -y install java-17-openjdk \       
-    && yum clean all \
-    && rm -rf /var/cache/yum
 
 CMD ["slurmdbd"]
